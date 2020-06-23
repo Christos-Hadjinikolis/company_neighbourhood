@@ -5,7 +5,7 @@ The code is executed in an iterative fashion relying on a [Breadth First Search 
 
 By leveraging this code we were able to construct the Reply Ltd company neighbourhood illustrated in the below picture.
 
-![The Reply Ltd Company Neighbourhood](./Reply_Ltd_Comp_Neighbouhood.png)
+![The Reply Ltd Company Neighbourhood](images/Reply_Ltd_Comp_Neighbouhood.png)
 
 The rest of this README file covers:
 
