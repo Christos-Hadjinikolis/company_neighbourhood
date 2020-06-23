@@ -1,4 +1,3 @@
-# NEO4J MODULE ------------------------------------------------------------------------------------#
 """
 Author: Dr. C. Hadjinikolis
 Date:   19/10/2016
@@ -7,28 +6,27 @@ Details:    Un-comment conde in lines 19-20 and run only the first time you run 
             that this script is cleaning the database at the start of every run.
 """
 
-# /Users/christoshadjinikolis/neo4j/CompanyHouse
-# - LIBRARIES -------------------------------------------------------------------------------------#
 from py2neo import Graph, Node, Relationship
 
-# - CONNECTING TO NEO4J LOCAL SERVER --------------------------------------------------------------#
+# - CONNECTING TO NEO4J LOCAL SERVER #
 graph = Graph('localhost', user='neo4j', password='neo4j1')
 graph.delete_all()
 
-# CREATE UNIQUENESS CONSTRAINTS -------------------------------------------------------------------#
+
+# CREATE UNIQUENESS CONSTRAINTS #
 # Works only the first time - need to remove afterwards (Nothing we can do --> it's a py2neo issue)
 # graph.schema.create_uniqueness_constraint("Officer", "id")
 # graph.schema.create_uniqueness_constraint('Company', 'id')
 
 
-# - SUB-FUNCTIONS ---------------------------------------------------------------------------------#
+# - SUB-FUNCTIONS #
 def create_company_node(company):
     """
     Simple function that gets an officer object and creates and returns a node object out of it.
     :param company: An Company object.
     :return: A Node object.
     """
-    print ("Node:" + company.name + " of type: Company.")
+    print("Node:" + company.name + " of type: Company.")
     node = Node("Company",
                 id=company.id,
                 name=company.name,
@@ -52,7 +50,7 @@ def create_officer_node(officer):
     :return: A Node object.
     """
 
-    print ("NODE:" + officer.name + " of type: Officer.")
+    print("NODE:" + officer.name + " of type: Officer.")
     node = Node("Officer",
                 id=officer.id,
                 name=officer.name,
@@ -76,10 +74,10 @@ def create_relationship(officer_node, company_node, officer, company):
     """
 
     try:
-        print ("RELATIONSHIP: Officer:" +
-               str(officer.name) + " is a: " +
-               str(officer.roles[company.id]) +
-               " at " + str(company.name))
+        print("RELATIONSHIP: Officer:" +
+              str(officer.name) + " is a: " +
+              str(officer.roles[company.id]) +
+              " at " + str(company.name))
 
         relation = Relationship(officer_node,
                                 officer.roles[company.id],
@@ -90,10 +88,6 @@ def create_relationship(officer_node, company_node, officer, company):
         tx.commit()
 
     except KeyError as ex:
-        print "For Officer id:" + str(officer.id) + ".[" + ex.message + "]"
-        print "key:" + ex.message + " is missing..."
-        print "Suggested fix: check number of results return per page for every request."
-
-
-
-# ---- END OF FILE --------------------------------------------------------------------------------#
+        print("For Officer id:" + str(officer.id) + ".[" + ex.message + "]")
+        print("key:" + ex.message + " is missing...")
+        print("Suggested fix: check number of results return per page for every request.")

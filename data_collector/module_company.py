@@ -1,12 +1,9 @@
-# - COMPANY MODULE --------------------------------------------------------------------------------#
-# - LIBRARIES -------------------------------------------------------------------------------------#
 from array import array
 from requests.auth import HTTPBasicAuth
 import requests
 import time
 
 
-# CLASS -------------------------------------------------------------------------------------------#
 class Company:
     """
     name: Company name (String)
@@ -21,7 +18,7 @@ class Company:
     acitve_officers: Map of boolean values.
     """
 
-    # CONSTRUCTOR ---------------------------------------------------------------------------------#
+    # CONSTRUCTOR
     def __init__(self, company_id, company_name, cmp_type, jurisdiction, status):
         self.id = company_id
         self.name = company_name
@@ -35,7 +32,7 @@ class Company:
         self.officers = {}
         self.active_officers = {}
 
-    # GET COMPANY OFFICERS ------------------------------------------------------------------------#
+    # GET COMPANY OFFICERS #
     def get_officers(self):
         """
         This function's main purpose is to return a company's directors (active and inactive).
@@ -44,7 +41,7 @@ class Company:
         Value: company role)
         """
         try:
-            # MAKE REST CALL ----------------------------------------------------------------------#
+            # MAKE REST CALL #
             response = requests.get(url='https://api.companieshouse.gov.uk/company/' + str(self.id)
                                         + '/officers?items_per_page=10000&start_index=0',
                                     auth=HTTPBasicAuth('3oYfAJNSaKgrxgG0RPcpxIPe6J7p2n3EHYJfyJvg'
@@ -53,7 +50,7 @@ class Company:
             # items_per_page=10000 is set to 10000 as this is an extraordinary large number,
             # decreasing the possibility that we could miss on an active officer
 
-            # CHECK IF RATE LIMIT HAS BEEN VIOLATED -----------------------------------------------#
+            # CHECK IF RATE LIMIT HAS BEEN VIOLATED #
             if response.status_code is 429:
                 print("Too many requests!!! Sleeping for 5 minutes!")
                 time.sleep(5 * 60)
@@ -64,7 +61,7 @@ class Company:
                                         auth=HTTPBasicAuth('3oYfAJNSaKgrxgG0RPcpxIPe6J7p2n3EHYJfyJvg',
                                                            ''))
 
-            # GET ALL OFFICERS --------------------------------------------------------------------#
+            # GET ALL OFFICERS #
             elif response.status_code is 200:
 
                 # Check if there are results to be collected
@@ -72,37 +69,37 @@ class Company:
                     total_results = response.json()['total_results']
                     if total_results is not 0:
 
-                        # PRINT JSON OUTPUT FOR TESTING -------------------------------------------#
-                        print "------------------------------ OFFICERS ----------------------------"
+                        # PRINT JSON OUTPUT FOR TESTING #
+                        print("------------------------------ OFFICERS ----------------------------")
 
                         # This will be stored to the company module and is not related to the user
                         # module.
 
                         for item in response.json()['items']:
 
-                            # GET USER UNIQUE ID --------------------------------------------------#
+                            # GET USER UNIQUE ID #
                             uid = item["links"]["officer"]["appointments"]
                             uid = uid[10:uid.find("appointments") - 1]
 
-                            # CHECK IF OFFICER IS NOT RESIGNED ------------------------------------#
+                            # CHECK IF OFFICER IS NOT RESIGNED
                             if "resigned_on" not in item:
 
-                                # ACTIVE ROLE? (YES or NO) ----------------------------------------#
+                                # ACTIVE ROLE? (YES or NO) #
                                 self.active_officers[uid] = True
 
-                                # SAVE OFFICER AND ROLE -------------------------------------------#
+                                # SAVE OFFICER AND ROLE #
                                 self.officers[uid] = item["officer_role"]
 
-                        # END FOR LOOP ------------------------------------------------------------#
+                        # END FOR LOOP #
 
-                        # CHECK FOR MORE PAGES TO COLLECT WITH MORE RESULTS -----------------------#
+                        # CHECK FOR MORE PAGES TO COLLECT WITH MORE RESULTS #
                         # If less items are returned from the available items then increase the
                         # results index and repeat request until no more data are available.
                         start_index = response.json()['items_per_page']
                         while total_results > start_index:
 
-                            print "Retrieved " + str(start_index) \
-                                  + " out of " + str(total_results) + " officers."
+                            print("Retrieved " + str(start_index)
+                                  + " out of " + str(total_results) + " officers.")
 
                             response = requests.get(url='https://api.companieshouse.gov.uk/company/'
                                                         + str(self.id)
@@ -128,29 +125,26 @@ class Company:
 
                             # Check if response is not 200 as should...
                             if response.status_code is not 200:
-                                print "Response status code: " + str(response.status_code)
-                                print "Something went wrong!"
+                                print("Response status code: " + str(response.status_code))
+                                print("Something went wrong!")
                                 return -1
 
                             for item in response.json()['items']:
 
                                 # GET USER UNIQUE ID
-                                # -----------------------------------------------------------------#
+                                # #
                                 uid = item["links"]["officer"]["appointments"]
                                 uid = uid[10:uid.find("appointments") - 1]
 
                                 # CHECK IF OFFICER IS NOT RESIGNED
-                                # -----------------------------------------------------------------#
+
                                 if "resigned_on" not in item:
                                     # ACTIVE ROLE? (YES or NO)
-                                    # -------------------------------------------------------------#
+                                    #
                                     self.active_officers[uid] = True
 
                                     # SAVE OFFICER AND ROLE
-                                    # -------------------------------------------------------------#
                                     self.officers[uid] = item["officer_role"]
-
-                            # END FOR LOOP --------------------------------------------------------#
 
                             # Move to next page by increasing the results_index
                             start_index += response.json()['items_per_page']
@@ -158,45 +152,37 @@ class Company:
                             # Sleep for 2 secs to avoid rate limit restrictions
                             time.sleep(2)
 
-                         # END WHILE LOOP ---------------------------------------------------------#
+                         # END WHILE LOOP #
 
-                        # PRINT DATA FOR TESTING --------------------------------------------------#
+                        # PRINT DATA FOR TESTING
                         for key, value in self.officers.iteritems():
-                            print "Officer: " + str(key) + \
-                                  "\tRole: " + str(value) + \
-                                  "\tActive: " + str(self.active_officers[key])
+                            print("Officer: " + str(key) +
+                                  "\tRole: " + str(value) +
+                                  "\tActive: " + str(self.active_officers[key]))
 
                         return self.officers
 
                     else:
 
-                        # IF NO OFFICERS ARE REGISTERED -------------------------------------------#
+                        # IF NO OFFICERS ARE REGISTERED #
                         print('No  officers registered!')
                         return -1
-
-                    # END IF ----------------------------------------------------------------------#
                 else:
 
-                    # IF TOTAL RESULTS IS MISSING FROM THE JSON FILE THEN -------------------------#
+                    # IF TOTAL RESULTS IS MISSING FROM THE JSON FILE THEN
                     print('No  officers registered!')
                     return -1
 
-                # END IF --------------------------------------------------------------------------#
-
-            # IF RESPONSE STATUS IS NOT VALID -----------------------------------------------------#
+            # IF RESPONSE STATUS IS NOT VALID #
             else:
-                print "Response status code: " + str(response.status_code)
-                print "Something went wrong!"
+                print("Response status code: " + str(response.status_code))
+                print("Something went wrong!")
                 return -1
 
-            # END IF ------------------------------------------------------------------------------#
-
-        # IF SERVER DROPS CONNECTION --------------------------------------------------------------#
+        # IF SERVER DROPS CONNECTION#
         except requests.exceptions.ChunkedEncodingError as ex:
 
-            print ex.message
-            print "Connection reset by peer! Sleep for 5 mins..."
+            print(ex.response)
+            print("Connection reset by peer! Sleep for 5 mins...")
             time.sleep(5 * 60)
             return None
-
-# ---- END OF FILE --------------------------------------------------------------------------------#
